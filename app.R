@@ -2,6 +2,7 @@ library(shiny)
 library(tcpl)  # Load the tcpl package
 library(DT)  # Load the DT package for interactive tables
 library(ggplot2)  # Load ggplot2 for visualization
+library(data.table)
 
 # Define UI for the application
 ui <- fluidPage(
@@ -372,7 +373,21 @@ mc4_df <- function(data, method_func) {
   invisible(eval(do.call(method_func,list())[[1]]))
 
   fitmodels <- c("cnst", "hill", "gnls", "poly1", "poly2", "pow", "exp2", "exp3", "exp4", "exp5")
-  dat <- tcpl:::tcplFit2(dat, fitmodels = fitmodels)
+  
+  myfun <- function(y) {
+    res <- tcplfit2::tcplfit2_core(y$conc,
+                                   y$resp,
+                                   cutoff = bmad,
+                                   bidirectional = TRUE,
+                                   verbose = FALSE,
+                                   force.fit = TRUE,
+                                   fitmodels = fitmodels
+    )
+    list(list(res)) #use list twice because data.table uses list(.) to look for values to assign to columns
+  }
+  
+  bmad <- max(unique(dat$bmad))
+  dat[wllt == 't',params:= myfun(.SD), by = .(spid)]
 
   dat
 }
@@ -391,11 +406,14 @@ mc5_df <- function(data, method_func) {
   dat[ , coff := max(coff)]
   cutoff <- max(dat$coff)
   invisible(eval(do.call(method_func,list())[[1]]))
+  bmad <- max(dat$bmad)
+  onesd <- bmad
+  
   myfun2 <- function(y) {
     res <- tcplfit2::tcplhit2_core(params = y$params[[1]],
                                    conc = y$conc,
                                    resp = y$resp,
-                                   cutoff = 3*bmad,
+                                   cutoff = bmad,
                                    onesd = onesd
     )
     list(list(res))
@@ -406,8 +424,7 @@ mc5_df <- function(data, method_func) {
   
   # pivot wider
   res_wide <- rbindlist(Map(cbind, spid = res$spid, res$V1))
-  dat <- tcpl:::tcplHit2(dat, coff = cutoff)
-  dat
+  res_wide
 
 }
 
