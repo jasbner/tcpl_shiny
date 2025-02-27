@@ -3,80 +3,260 @@ library(tcpl)  # Load the tcpl package
 library(DT)  # Load the DT package for interactive tables
 library(ggplot2)  # Load ggplot2 for visualization
 library(data.table)
+library(shinyjs)  # For advanced JavaScript functionality
 
 # Define UI for the application
 ui <- fluidPage(
-    titlePanel("My Shiny App"),  # Add a title panel with the app name
-
-    tabsetPanel(
-        id = "steps",  # ID for the tabset
-        tabPanel("Introduction", 
-                 h3("Welcome to the ToxCast Data Analysis Pipeline"),
-                 p("This application will guide you through the steps of analyzing ToxCast data.")
+    useShinyjs(),  # Initialize shinyjs for showing/hiding content
+    tags$head(
+        tags$style(HTML("
+            /* Stepper container */
+            .stepper-container {
+                width: 100%;
+                margin: 20px 0;
+            }
+            
+            /* Progress bar */
+            .progress-bar-container {
+                display: flex;
+                justify-content: space-between;
+                position: relative;
+                margin-bottom: 30px;
+            }
+            
+            /* Progress line */
+            .progress-line {
+                position: absolute;
+                top: 15px;
+                left: 0;
+                width: 100%;
+                height: 4px;
+                background-color: #e0e0e0;
+                z-index: 1;
+            }
+            
+            /* Active progress line */
+            .progress-line-active {
+                position: absolute;
+                top: 15px;
+                left: 0;
+                height: 4px;
+                background-color: #4CAF50;
+                z-index: 2;
+                transition: width 0.3s ease;
+            }
+            
+            /* Step circle */
+            .step {
+                width: 30px;
+                height: 30px;
+                border-radius: 50%;
+                background-color: #e0e0e0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: bold;
+                color: #fff;
+                position: relative;
+                z-index: 3;
+                cursor: pointer;
+            }
+            
+            /* Active step */
+            .step.active {
+                background-color: #4CAF50;
+            }
+            
+            /* Completed step */
+            .step.completed {
+                background-color: #4CAF50;
+            }
+            
+            /* Step label */
+            .step-label {
+                position: absolute;
+                top: 35px;
+                left: 50%;
+                transform: translateX(-50%);
+                white-space: nowrap;
+                font-size: 12px;
+                font-weight: bold;
+            }
+            
+            /* Step content */
+            .step-content {
+                padding: 20px;
+                border: 1px solid #e0e0e0;
+                border-radius: 5px;
+                margin-top: 20px;
+            }
+            
+            /* Navigation buttons */
+            .nav-buttons {
+                display: flex;
+                justify-content: space-between;
+                margin-top: 20px;
+            }
+            
+            /* Button styling */
+            .btn-navigate {
+                background-color: #4CAF50;
+                color: white;
+                padding: 10px 20px;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+            
+            .btn-navigate:disabled {
+                background-color: #cccccc;
+                cursor: not-allowed;
+            }
+        "))
+    ),
+    
+    titlePanel("ToxCast Data Analysis Pipeline"),  # Add a title panel with the app name
+    
+    # Stepper container
+    div(class = "stepper-container",
+        # Progress bar
+        div(class = "progress-bar-container",
+            # Progress line background
+            div(class = "progress-line"),
+            # Active progress line (will be updated by JavaScript)
+            div(id = "progress-line-active", class = "progress-line-active"),
+            
+            # Step 1: Introduction
+            div(id = "step-1", class = "step active", "1",
+                div(class = "step-label", "Introduction")),
+            
+            # Step 2: Data Upload
+            div(id = "step-2", class = "step", "2",
+                div(class = "step-label", "Data Upload")),
+            
+            # Step 3: Level 1 Processing
+            div(id = "step-3", class = "step", "3",
+                div(class = "step-label", "Level 1")),
+            
+            # Step 4: Level 2 Processing
+            div(id = "step-4", class = "step", "4",
+                div(class = "step-label", "Level 2")),
+            
+            # Step 5: Level 3 Processing
+            div(id = "step-5", class = "step", "5",
+                div(class = "step-label", "Level 3")),
+            
+            # Step 6: Level 4 Processing
+            div(id = "step-6", class = "step", "6",
+                div(class = "step-label", "Level 4")),
+            
+            # Step 7: Level 5 Processing
+            div(id = "step-7", class = "step", "7",
+                div(class = "step-label", "Level 5"))
         ),
-        tabPanel("Data Upload", 
-                 sidebarLayout(
-                     sidebarPanel(
-                         fileInput("file", "Upload CSV File"),  # A file input for uploading CSV files
-                         actionButton("view", "View Data")  # An action button to view the data
-                     ),
-                     mainPanel(
-                         DT::dataTableOutput("dataTable")  # A main panel to display the uploaded data in a DT table
-                     )
-                 )
+        
+        # Step content containers
+        div(id = "step-1-content", class = "step-content",
+            h3("Welcome to the ToxCast Data Analysis Pipeline"),
+            p("This application will guide you through the steps of analyzing ToxCast data."),
+            p("Use the navigation buttons below to move through each processing level."),
+            div(class = "nav-buttons",
+                actionButton("next-1", "Begin Analysis", class = "btn-navigate")
+            )
         ),
-        tabPanel("Level 1 Processing",  # New tab for Level 1 processing
-                 h3("Level 1 Processing Overview"),
-                 actionButton("toggle_desc", "Show Description"),  # Button to toggle description
-                 uiOutput("description_ui"),  # Use uiOutput to dynamically render the description
-                 actionButton("process_data", "Process Level 1 Data"),  # Button to initiate Level 1 processing
-                 DT::dataTableOutput("processedData"),  # Output for processed data
-                 plotOutput("processedPlot")  # Output for visualization
+        
+        div(id = "step-2-content", class = "step-content", style = "display: none;",
+            h3("Data Upload"),
+            sidebarLayout(
+                sidebarPanel(
+                    fileInput("file", "Upload CSV File"),  # A file input for uploading CSV files
+                    actionButton("view", "View Data")  # An action button to view the data
+                ),
+                mainPanel(
+                    DT::dataTableOutput("dataTable")  # A main panel to display the uploaded data in a DT table
+                )
+            ),
+            div(class = "nav-buttons",
+                actionButton("prev-2", "Previous", class = "btn-navigate"),
+                actionButton("next-2", "Next", class = "btn-navigate")
+            )
         ),
-        tabPanel("Level 2 Processing",  # New tab for Level 2 processing
-                 h3("Level 2 Processing Overview"),
-                 selectInput("method_select", "Select Correction Method:", 
-                             choices = names(tcpl:::mc2_mthds()), selected = names(tcpl:::mc2_mthds())[1]),  # Dropdown for method selection
-                 actionButton("toggle_desc_lvl2", "Show Description"),  # Button to toggle description
-                 uiOutput("description_ui_lvl2"),  # Use uiOutput to dynamically render the description
-                 actionButton("process_data_lvl2", "Process Level 2 Data"),  # Button to initiate Level 2 processing
-                 DT::dataTableOutput("processedData_lvl2"),  # Output for processed Level 2 data
-                 plotOutput("processedPlot_lvl2")  # Output for visualization of Level 2 data
+        
+        div(id = "step-3-content", class = "step-content", style = "display: none;",
+            h3("Level 1 Processing Overview"),
+            actionButton("toggle_desc", "Show Description"),  # Button to toggle description
+            uiOutput("description_ui"),  # Use uiOutput to dynamically render the description
+            actionButton("process_data", "Process Level 1 Data"),  # Button to initiate Level 1 processing
+            DT::dataTableOutput("processedData"),  # Output for processed data
+            plotOutput("processedPlot"),  # Output for visualization
+            div(class = "nav-buttons",
+                actionButton("prev-3", "Previous", class = "btn-navigate"),
+                actionButton("next-3", "Next", class = "btn-navigate")
+            )
         ),
-        tabPanel("Level 3 Processing",  # New tab for Level 3 processing
-                 h3("Level 3 Processing Overview"),
-                 selectInput("method_select_lvl3", "Select Correction Method:", 
-                             choices = names(tcpl:::mc3_mthds()), selected = names(tcpl:::mc3_mthds())[1]),  # Dropdown for method selection
-                 actionButton("toggle_desc_lvl3", "Show Description"),  # Button to toggle description
-                 uiOutput("description_ui_lvl3"),  # Use uiOutput to dynamically render the description
-                 actionButton("process_data_lvl3", "Process Level 3 Data"),  # Button to initiate Level 3 processing
-                 DT::dataTableOutput("processedData_lvl3"),  # Output for processed Level 3 data
-                 plotOutput("processedPlot_lvl3")  # Output for visualization of Level 3 data
+        
+        div(id = "step-4-content", class = "step-content", style = "display: none;",
+            h3("Level 2 Processing Overview"),
+            selectInput("method_select", "Select Correction Method:", 
+                        choices = names(tcpl:::mc2_mthds()), selected = names(tcpl:::mc2_mthds())[1]),  # Dropdown for method selection
+            actionButton("toggle_desc_lvl2", "Show Description"),  # Button to toggle description
+            uiOutput("description_ui_lvl2"),  # Use uiOutput to dynamically render the description
+            actionButton("process_data_lvl2", "Process Level 2 Data"),  # Button to initiate Level 2 processing
+            DT::dataTableOutput("processedData_lvl2"),  # Output for processed Level 2 data
+            plotOutput("processedPlot_lvl2"),  # Output for visualization of Level 2 data
+            div(class = "nav-buttons",
+                actionButton("prev-4", "Previous", class = "btn-navigate"),
+                actionButton("next-4", "Next", class = "btn-navigate")
+            )
         ),
-        tabPanel("Level 4 Processing",  # New tab for Level 4 processing
-                 h3("Level 4 Processing Overview"),
-                 selectInput("method_select_lvl4", "Select Correction Method:", 
-                             choices = names(tcpl:::mc4_mthds()), selected = names(tcpl:::mc4_mthds())[1]),  # Dropdown for method selection
-                 actionButton("toggle_desc_lvl4", "Show Description"),  # Button to toggle description
-                 uiOutput("description_ui_lvl4"),  # Use uiOutput to dynamically render the description
-                 actionButton("process_data_lvl4", "Process Level 4 Data"),  # Button to initiate Level 4 processing
-                 DT::dataTableOutput("processedData_lvl4"),  # Output for processed Level 4 data
-                 plotOutput("processedPlot_lvl4")  # Output for visualization of Level 4 data
+        
+        div(id = "step-5-content", class = "step-content", style = "display: none;",
+            h3("Level 3 Processing Overview"),
+            selectInput("method_select_lvl3", "Select Correction Method:", 
+                        choices = names(tcpl:::mc3_mthds()), selected = names(tcpl:::mc3_mthds())[1]),  # Dropdown for method selection
+            actionButton("toggle_desc_lvl3", "Show Description"),  # Button to toggle description
+            uiOutput("description_ui_lvl3"),  # Use uiOutput to dynamically render the description
+            actionButton("process_data_lvl3", "Process Level 3 Data"),  # Button to initiate Level 3 processing
+            DT::dataTableOutput("processedData_lvl3"),  # Output for processed Level 3 data
+            plotOutput("processedPlot_lvl3"),  # Output for visualization of Level 3 data
+            div(class = "nav-buttons",
+                actionButton("prev-5", "Previous", class = "btn-navigate"),
+                actionButton("next-5", "Next", class = "btn-navigate")
+            )
         ),
-        tabPanel("Level 5 Processing",  # New tab for Level 5 processing
-                 h3("Level 5 Processing Overview"),
-                 actionButton("toggle_desc_lvl5", "Show Description"),  # Button to toggle description
-                 uiOutput("description_ui_lvl5"),  # Use uiOutput to dynamically render the description
-                 selectInput("method_select_lvl5", "Select Correction Method:", 
-                             choices = names(tcpl:::mc5_mthds()), selected = names(tcpl:::mc5_mthds())[1]),  # Dropdown for method selection
-                 actionButton("process_data_lvl5", "Process Level 5 Data"),  # Button to initiate Level 5 processing
-                 DT::dataTableOutput("processedData_lvl5")  # Output for processed Level 5 data
+        
+        div(id = "step-6-content", class = "step-content", style = "display: none;",
+            h3("Level 4 Processing Overview"),
+            selectInput("method_select_lvl4", "Select Correction Method:", 
+                        choices = names(tcpl:::mc4_mthds()), selected = names(tcpl:::mc4_mthds())[1]),  # Dropdown for method selection
+            actionButton("toggle_desc_lvl4", "Show Description"),  # Button to toggle description
+            uiOutput("description_ui_lvl4"),  # Use uiOutput to dynamically render the description
+            actionButton("process_data_lvl4", "Process Level 4 Data"),  # Button to initiate Level 4 processing
+            DT::dataTableOutput("processedData_lvl4"),  # Output for processed Level 4 data
+            plotOutput("processedPlot_lvl4"),  # Output for visualization of Level 4 data
+            div(class = "nav-buttons",
+                actionButton("prev-6", "Previous", class = "btn-navigate"),
+                actionButton("next-6", "Next", class = "btn-navigate")
+            )
+        ),
+        
+        div(id = "step-7-content", class = "step-content", style = "display: none;",
+            h3("Level 5 Processing Overview"),
+            actionButton("toggle_desc_lvl5", "Show Description"),  # Button to toggle description
+            uiOutput("description_ui_lvl5"),  # Use uiOutput to dynamically render the description
+            selectInput("method_select_lvl5", "Select Correction Method:", 
+                        choices = names(tcpl:::mc5_mthds()), selected = names(tcpl:::mc5_mthds())[1]),  # Dropdown for method selection
+            actionButton("process_data_lvl5", "Process Level 5 Data"),  # Button to initiate Level 5 processing
+            DT::dataTableOutput("processedData_lvl5"),  # Output for processed Level 5 data
+            div(class = "nav-buttons",
+                actionButton("prev-7", "Previous", class = "btn-navigate")
+            )
         )
     )
 )
 
 # Define server logic
-server <- function(input, output) {
+server <- function(input, output, session) {
     # Create a reactive dataset to hold the uploaded data
     uploaded_data <- reactiveVal(NULL)
     processed_data <- reactiveVal(NULL)  # Reactive value for Level 1 processed data
@@ -84,6 +264,102 @@ server <- function(input, output) {
     processed_data_lvl3 <- reactiveVal(NULL)  # Reactive value for Level 3 processed data
     processed_data_lvl4 <- reactiveVal(NULL)  # Reactive value for Level 4 processed data
     processed_data_lvl5 <- reactiveVal(NULL)  # Reactive value for Level 5 processed data
+    
+    # Keep track of the current step
+    current_step <- reactiveVal(1)
+    
+    # Function to update the progress bar and step indicators
+    updateProgressBar <- function(step) {
+        # Calculate the percentage for progress line
+        percentage <- (step - 1) / 6 * 100
+        
+        # Update progress line width
+        runjs(sprintf("document.getElementById('progress-line-active').style.width = '%s%%';", percentage))
+        
+        # Update step classes
+        for (i in 1:7) {
+            if (i < step) {
+                # Mark previous steps as completed
+                runjs(sprintf("document.getElementById('step-%s').className = 'step completed';", i))
+            } else if (i == step) {
+                # Mark current step as active
+                runjs(sprintf("document.getElementById('step-%s').className = 'step active';", i))
+            } else {
+                # Mark future steps as inactive
+                runjs(sprintf("document.getElementById('step-%s').className = 'step';", i))
+            }
+        }
+        
+        # Hide all step content
+        for (i in 1:7) {
+            shinyjs::hide(paste0("step-", i, "-content"))
+        }
+        
+        # Show the current step content
+        shinyjs::show(paste0("step-", step, "-content"))
+        
+        # Update current step value
+        current_step(step)
+    }
+    
+    # Step navigation event handlers
+    observeEvent(input$`next-1`, {
+        updateProgressBar(2)
+    })
+    
+    observeEvent(input$`prev-2`, {
+        updateProgressBar(1)
+    })
+    
+    observeEvent(input$`next-2`, {
+        updateProgressBar(3)
+    })
+    
+    observeEvent(input$`prev-3`, {
+        updateProgressBar(2)
+    })
+    
+    observeEvent(input$`next-3`, {
+        updateProgressBar(4)
+    })
+    
+    observeEvent(input$`prev-4`, {
+        updateProgressBar(3)
+    })
+    
+    observeEvent(input$`next-4`, {
+        updateProgressBar(5)
+    })
+    
+    observeEvent(input$`prev-5`, {
+        updateProgressBar(4)
+    })
+    
+    observeEvent(input$`next-5`, {
+        updateProgressBar(6)
+    })
+    
+    observeEvent(input$`prev-6`, {
+        updateProgressBar(5)
+    })
+    
+    observeEvent(input$`next-6`, {
+        updateProgressBar(7)
+    })
+    
+    observeEvent(input$`prev-7`, {
+        updateProgressBar(6)
+    })
+    
+    # Allow direct clicking on step indicators
+    for (i in 1:7) {
+        local({
+            step_num <- i
+            observeEvent(input[[paste0("step-", step_num)]], {
+                updateProgressBar(step_num)
+            })
+        })
+    }
 
     # Render the data table using DT when the "View Data" button is clicked
     observeEvent(input$view, {
@@ -141,9 +417,18 @@ server <- function(input, output) {
         req(uploaded_data())  # Ensure data has been uploaded and stored
         data <- uploaded_data()  # Get the uploaded data
 
+        # Show loading message
+        showNotification("Processing Level 1 data...", type = "message", id = "process-notification")
+        
         # Perform Level 1 processing using the mc1_df function
         processed_data(mc1_df(data))  # Update the reactive value for Level 1 processed data
 
+        # Remove the loading message
+        removeNotification("process-notification")
+        
+        # Show success message
+        showNotification("Level 1 processing complete!", type = "message")
+        
         # Render the processed data table for Level 1
         output$processedData <- DT::renderDataTable({
             req(processed_data())  # Ensure Level 1 processed data is available
@@ -168,6 +453,9 @@ server <- function(input, output) {
             return()  # Exit the function if no data is available
         }
 
+        # Show loading message
+        showNotification("Processing Level 2 data...", type = "message", id = "process-notification-2")
+        
         # Call the mc2 function with the processed Level 1 data
         tryCatch({
             method_selected <- input$method_select  # Get the selected method
@@ -177,6 +465,12 @@ server <- function(input, output) {
 
             # Store the processed Level 2 data
             processed_data_lvl2(lvl2_data)
+            
+            # Remove the loading message
+            removeNotification("process-notification-2")
+            
+            # Show success message
+            showNotification("Level 2 processing complete!", type = "message")
 
             # Render the processed Level 2 data table
             output$processedData_lvl2 <- DT::renderDataTable({
@@ -191,6 +485,7 @@ server <- function(input, output) {
                     labs(title = "Processed Level 2 Data", x = "Assay Component ID (acid)", y = "Corrected Value (cval)")
             })
         }, error = function(e) {
+            removeNotification("process-notification-2")
             showNotification(paste("Error during Level 2 processing:", e$message), type = "error")
         })
     })
@@ -205,6 +500,9 @@ server <- function(input, output) {
             return()  # Exit the function if no data is available
         }
 
+        # Show loading message
+        showNotification("Processing Level 3 data...", type = "message", id = "process-notification-3")
+        
         # Call the mc3 function with the processed Level 2 data
         tryCatch({
             method_selected <- input$method_select_lvl3  # Get the selected method
@@ -214,6 +512,12 @@ server <- function(input, output) {
 
             # Store the processed Level 3 data
             processed_data_lvl3(lvl3_data)
+            
+            # Remove the loading message
+            removeNotification("process-notification-3")
+            
+            # Show success message
+            showNotification("Level 3 processing complete!", type = "message")
 
             # Render the processed Level 3 data table
             output$processedData_lvl3 <- DT::renderDataTable({
@@ -228,6 +532,7 @@ server <- function(input, output) {
                     labs(title = "Processed Level 3 Data", x = "Assay Endpoint ID (aeid)", y = "Normalized Response (resp)")
             })
         }, error = function(e) {
+            removeNotification("process-notification-3")
             showNotification(paste("Error during Level 3 processing:", e$message), type = "error")
         })
     })
@@ -242,6 +547,9 @@ server <- function(input, output) {
             return()  # Exit the function if no data is available
         }
 
+        # Show loading message
+        showNotification("Processing Level 4 data...", type = "message", id = "process-notification-4")
+        
         # Call the mc4 function with the processed Level 3 data
         tryCatch({
             method_selected <- input$method_select_lvl4  # Get the selected method
@@ -251,6 +559,12 @@ server <- function(input, output) {
 
             # Store the processed Level 4 data
             processed_data_lvl4(lvl4_data)
+            
+            # Remove the loading message
+            removeNotification("process-notification-4")
+            
+            # Show success message
+            showNotification("Level 4 processing complete!", type = "message")
 
             # Render the processed Level 4 data table
             output$processedData_lvl4 <- DT::renderDataTable({
@@ -258,8 +572,15 @@ server <- function(input, output) {
                 processed_data_lvl4()  # Display the processed Level 4 dataset
             })
 
+            # Create a simple plot for Level 4 data
+            output$processedPlot_lvl4 <- renderPlot({
+                plot(processed_data_lvl4()$conc, processed_data_lvl4()$resp, 
+                     xlab = "Concentration", ylab = "Response",
+                     main = "Level 4 Data: Concentration vs Response")
+            })
             
         }, error = function(e) {
+            removeNotification("process-notification-4")
             showNotification(paste("Error during Level 4 processing:", e$message), type = "error")
         })
     })
@@ -274,6 +595,9 @@ server <- function(input, output) {
             return()  # Exit the function if no data is available
         }
 
+        # Show loading message
+        showNotification("Processing Level 5 data...", type = "message", id = "process-notification-5")
+        
         # Call the mc5 function with the processed Level 4 data
         tryCatch({
             method_selected <- input$method_select_lvl5  # Get the selected method
@@ -283,6 +607,12 @@ server <- function(input, output) {
 
             # Store the processed Level 5 data
             processed_data_lvl5(lvl5_data)
+            
+            # Remove the loading message
+            removeNotification("process-notification-5")
+            
+            # Show success message
+            showNotification("Level 5 processing complete!", type = "message")
 
             # Render the processed Level 5 data table
             output$processedData_lvl5 <- DT::renderDataTable({
@@ -291,9 +621,28 @@ server <- function(input, output) {
             })
 
         }, error = function(e) {
+            removeNotification("process-notification-5")
             showNotification(paste("Error during Level 5 processing:", e$message), type = "error")
         })
     })
+    
+    # JavaScript to handle the dynamic progress bar
+    js <- "
+    $(document).ready(function() {
+        // Make the step indicators clickable
+        $('.step').on('click', function() {
+            var stepId = $(this).attr('id');
+            Shiny.setInputValue(stepId, Math.random());
+        });
+    });
+    "
+    
+    session$onSessionEnded(function() {
+        # Clean up code when the session ends
+    })
+    
+    # Run the JavaScript code once the session is initialized
+    runjs(js)
 }
 
 # Function to perform Level 1 processing on a data frame
