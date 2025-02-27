@@ -152,7 +152,11 @@ ui <- fluidPage(
             
             # Step 7: Level 5 Processing
             div(id = "step-7", class = "step", "5",
-                div(class = "step-label", "Level 5"))
+                div(class = "step-label", "Level 5")),
+            
+            # Step 8: Level 6 Processing
+            div(id = "step-8", class = "step", "6",
+                div(class = "step-label", "Level 6"))
         ),
         
         # Step content containers
@@ -243,9 +247,21 @@ ui <- fluidPage(
                         choices = names(tcpl:::mc5_mthds()), selected = names(tcpl:::mc5_mthds())[1]),  # Dropdown for method selection
             actionButton("process_data_lvl5", "Process Level 5 Data"),  # Button to initiate Level 5 processing
             div(class = "nav-buttons",
-                actionButton("prev-7", "Previous", class = "btn-navigate")
+                actionButton("prev-7", "Previous", class = "btn-navigate"),
+                actionButton("next-7", "Next", class = "btn-navigate")
             ),
             DT::dataTableOutput("processedData_lvl5")  # Output for processed Level 5 data
+        ),
+        
+        div(id = "step-8-content", class = "step-content", style = "display: none;",
+            h3("Level 6 Processing"),
+            selectInput("method_select_lvl6", "Select Correction Method:", 
+                        choices = c("method1", "method2"), selected = "method1"),  # Placeholder dropdown for method selection
+            actionButton("process_data_lvl6", "Process Level 6 Data"),  # Button to initiate Level 6 processing
+            div(class = "nav-buttons",
+                actionButton("prev-8", "Previous", class = "btn-navigate")
+            ),
+            DT::dataTableOutput("processedData_lvl6")  # Output for processed Level 6 data
         )
     )
 )
@@ -259,6 +275,7 @@ server <- function(input, output, session) {
     processed_data_lvl3 <- reactiveVal(NULL)  # Reactive value for Level 3 processed data
     processed_data_lvl4 <- reactiveVal(NULL)  # Reactive value for Level 4 processed data
     processed_data_lvl5 <- reactiveVal(NULL)  # Reactive value for Level 5 processed data
+    processed_data_lvl6 <- reactiveVal(NULL)  # Reactive value for Level 6 processed data
     
     # Keep track of the current step
     current_step <- reactiveVal(1)
@@ -266,13 +283,13 @@ server <- function(input, output, session) {
     # Function to update the progress bar and step indicators
     updateProgressBar <- function(step) {
         # Calculate the percentage for progress line
-        percentage <- (step - 1) / 6 * 100
+        percentage <- (step - 1) / 7 * 100
         
         # Update progress line width
         runjs(sprintf("document.getElementById('progress-line-active').style.width = '%s%%';", percentage))
         
         # Update step classes
-        for (i in 1:7) {
+        for (i in 1:8) {
             if (i < step) {
                 # Mark previous steps as completed
                 runjs(sprintf("document.getElementById('step-%s').className = 'step completed';", i))
@@ -286,7 +303,7 @@ server <- function(input, output, session) {
         }
         
         # Hide all step content
-        for (i in 1:7) {
+        for (i in 1:8) {
             shinyjs::hide(paste0("step-", i, "-content"))
         }
         
@@ -344,6 +361,14 @@ server <- function(input, output, session) {
     
     observeEvent(input$`prev-7`, {
         updateProgressBar(6)
+    })
+    
+    observeEvent(input$`next-7`, {
+        updateProgressBar(8)
+    })
+    
+    observeEvent(input$`prev-8`, {
+        updateProgressBar(7)
     })
     
     # Allow direct clicking on step indicators
@@ -588,6 +613,51 @@ server <- function(input, output, session) {
         })
     })
     
+    # Process Level 6 data when the "Process Level 6 Data" button is clicked
+    observeEvent(input$process_data_lvl6, {
+        req(processed_data_lvl5())  # Ensure Level 5 processed data is available
+
+        # Check if processed Level 5 data is empty
+        if (nrow(processed_data_lvl5()) == 0) {
+            showNotification("No data available for Level 6 processing. Please ensure Level 5 processing has valid data.", type = "error")
+            return()  # Exit the function if no data is available
+        }
+
+        # Show loading message
+        showNotification("Processing Level 6 data...", type = "message", id = "process-notification-6")
+        
+        # Call the mc6 function with the processed Level 5 data
+        tryCatch({
+            method_selected <- input$method_select_lvl6  # Get the selected method
+            # Uncomment when mc6_mthds is implemented
+            # method_func <- tcpl:::mc6_mthds()[[method_selected]]  # Get the selected method function
+            
+            # For now, use a placeholder method function
+            method_func <- function() { list(quote({})) }
+            
+            lvl6_data <- mc6_df(processed_data_lvl5(), method_func)  # Call mc6 with the processed Level 5 data and selected method
+
+            # Store the processed Level 6 data
+            processed_data_lvl6(lvl6_data)
+            
+            # Remove the loading message
+            removeNotification("process-notification-6")
+            
+            # Show success message
+            showNotification("Level 6 processing complete!", type = "message")
+
+            # Render the processed Level 6 data table
+            output$processedData_lvl6 <- DT::renderDataTable({
+                req(processed_data_lvl6())  # Ensure Level 6 data is available
+                processed_data_lvl6()  # Display the processed Level 6 dataset
+            })
+
+        }, error = function(e) {
+            removeNotification("process-notification-6")
+            showNotification(paste("Error during Level 6 processing:", e$message), type = "error")
+        })
+    })
+    
     # JavaScript to handle the dynamic progress bar
     js <- "
     $(document).ready(function() {
@@ -738,6 +808,15 @@ mc5_df <- function(data, method_func) {
   res_wide
 
 }
+
+mc6_df <- function(data, method_func) {
+  # Start with the data from Level 5
+  dat <- data
+  
+  # Return the processed data
+  return(dat)
+}
+
 
 # Run the application 
 shinyApp(ui = ui, server = server)
