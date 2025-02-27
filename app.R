@@ -180,22 +180,22 @@ ui <- fluidPage(
             fileInput("file", "Upload CSV File"),  # A file input for uploading CSV files
             actionButton("view", "Preview Data"),  # An action button to view the data
             HTML("<div style='margin-top: 5px; margin-bottom: 15px; font-size: 12px; color: #666;'><i>Note: If no CSV file is uploaded, example data will be used.</i></div>"),
-            DT::dataTableOutput("dataTable"),  # Display the uploaded data in a DT table
             div(class = "nav-buttons",
                 actionButton("prev-2", "Previous", class = "btn-navigate"),
                 actionButton("next-2", "Next", class = "btn-navigate")
-            )
+            ),
+            DT::dataTableOutput("dataTable")  # Display the uploaded data in a DT table AFTER the buttons
         ),
         
         div(id = "step-3-content", class = "step-content", style = "display: none;",
             h3("Level 1 Processing"),
             actionButton("process_data", "Process Level 1 Data"),  # Button to initiate Level 1 processing
-            DT::dataTableOutput("processedData"),  # Output for processed data
-            plotOutput("processedPlot"),  # Output for visualization
             div(class = "nav-buttons",
                 actionButton("prev-3", "Previous", class = "btn-navigate"),
                 actionButton("next-3", "Next", class = "btn-navigate")
-            )
+            ),
+            DT::dataTableOutput("processedData"),  # Output for processed data
+            plotOutput("processedPlot")  # Output for visualization
         ),
         
         div(id = "step-4-content", class = "step-content", style = "display: none;",
@@ -203,12 +203,12 @@ ui <- fluidPage(
             selectInput("method_select", "Select Correction Method:", 
                         choices = names(tcpl:::mc2_mthds()), selected = names(tcpl:::mc2_mthds())[1]),  # Dropdown for method selection
             actionButton("process_data_lvl2", "Process Level 2 Data"),  # Button to initiate Level 2 processing
-            DT::dataTableOutput("processedData_lvl2"),  # Output for processed Level 2 data
-            plotOutput("processedPlot_lvl2"),  # Output for visualization of Level 2 data
             div(class = "nav-buttons",
                 actionButton("prev-4", "Previous", class = "btn-navigate"),
                 actionButton("next-4", "Next", class = "btn-navigate")
-            )
+            ),
+            DT::dataTableOutput("processedData_lvl2"),  # Output for processed Level 2 data
+            plotOutput("processedPlot_lvl2")  # Output for visualization of Level 2 data
         ),
         
         div(id = "step-5-content", class = "step-content", style = "display: none;",
@@ -216,12 +216,12 @@ ui <- fluidPage(
             selectInput("method_select_lvl3", "Select Correction Method:", 
                         choices = names(tcpl:::mc3_mthds()), selected = names(tcpl:::mc3_mthds())[1]),  # Dropdown for method selection
             actionButton("process_data_lvl3", "Process Level 3 Data"),  # Button to initiate Level 3 processing
-            DT::dataTableOutput("processedData_lvl3"),  # Output for processed Level 3 data
-            plotOutput("processedPlot_lvl3"),  # Output for visualization of Level 3 data
             div(class = "nav-buttons",
                 actionButton("prev-5", "Previous", class = "btn-navigate"),
                 actionButton("next-5", "Next", class = "btn-navigate")
-            )
+            ),
+            DT::dataTableOutput("processedData_lvl3"),  # Output for processed Level 3 data
+            plotOutput("processedPlot_lvl3")  # Output for visualization of Level 3 data
         ),
         
         div(id = "step-6-content", class = "step-content", style = "display: none;",
@@ -229,12 +229,12 @@ ui <- fluidPage(
             selectInput("method_select_lvl4", "Select Correction Method:", 
                         choices = names(tcpl:::mc4_mthds()), selected = names(tcpl:::mc4_mthds())[1]),  # Dropdown for method selection
             actionButton("process_data_lvl4", "Process Level 4 Data"),  # Button to initiate Level 4 processing
-            DT::dataTableOutput("processedData_lvl4"),  # Output for processed Level 4 data
-            plotOutput("processedPlot_lvl4"),  # Output for visualization of Level 4 data
             div(class = "nav-buttons",
                 actionButton("prev-6", "Previous", class = "btn-navigate"),
                 actionButton("next-6", "Next", class = "btn-navigate")
-            )
+            ),
+            DT::dataTableOutput("processedData_lvl4"),  # Output for processed Level 4 data
+            plotOutput("processedPlot_lvl4")  # Output for visualization of Level 4 data
         ),
         
         div(id = "step-7-content", class = "step-content", style = "display: none;",
@@ -242,10 +242,10 @@ ui <- fluidPage(
             selectInput("method_select_lvl5", "Select Correction Method:", 
                         choices = names(tcpl:::mc5_mthds()), selected = names(tcpl:::mc5_mthds())[1]),  # Dropdown for method selection
             actionButton("process_data_lvl5", "Process Level 5 Data"),  # Button to initiate Level 5 processing
-            DT::dataTableOutput("processedData_lvl5"),  # Output for processed Level 5 data
             div(class = "nav-buttons",
                 actionButton("prev-7", "Previous", class = "btn-navigate")
-            )
+            ),
+            DT::dataTableOutput("processedData_lvl5")  # Output for processed Level 5 data
         )
     )
 )
