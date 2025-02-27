@@ -218,7 +218,7 @@ ui <- fluidPage(
         div(id = "step-5-content", class = "step-content", style = "display: none;",
             h3("Level 3 Processing"),
             selectInput("method_select_lvl3", "Select Correction Method:", 
-                        choices = names(tcpl:::mc3_mthds()), selected = names(tcpl:::mc3_mthds())[1]),  # Dropdown for method selection
+                        choices = names(tcpl:::mc3_mthds()), selected = names(tcpl:::mc3_mthds())[36]),  # Dropdown for method selection
             actionButton("process_data_lvl3", "Process Level 3 Data"),  # Button to initiate Level 3 processing
             div(class = "nav-buttons",
                 actionButton("prev-5", "Previous", class = "btn-navigate"),
