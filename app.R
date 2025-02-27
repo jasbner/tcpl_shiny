@@ -127,31 +127,31 @@ ui <- fluidPage(
             div(id = "progress-line-active", class = "progress-line-active"),
             
             # Step 1: Introduction
-            div(id = "step-1", class = "step active", "1",
+            div(id = "step-1", class = "step active", "I",
                 div(class = "step-label", "Introduction")),
             
             # Step 2: Data Upload
-            div(id = "step-2", class = "step", "2",
+            div(id = "step-2", class = "step", "U",
                 div(class = "step-label", "Data Upload")),
             
             # Step 3: Level 1 Processing
-            div(id = "step-3", class = "step", "3",
+            div(id = "step-3", class = "step", "1",
                 div(class = "step-label", "Level 1")),
             
             # Step 4: Level 2 Processing
-            div(id = "step-4", class = "step", "4",
+            div(id = "step-4", class = "step", "2",
                 div(class = "step-label", "Level 2")),
             
             # Step 5: Level 3 Processing
-            div(id = "step-5", class = "step", "5",
+            div(id = "step-5", class = "step", "3",
                 div(class = "step-label", "Level 3")),
             
             # Step 6: Level 4 Processing
-            div(id = "step-6", class = "step", "6",
+            div(id = "step-6", class = "step", "4",
                 div(class = "step-label", "Level 4")),
             
             # Step 7: Level 5 Processing
-            div(id = "step-7", class = "step", "7",
+            div(id = "step-7", class = "step", "5",
                 div(class = "step-label", "Level 5"))
         ),
         
@@ -160,6 +160,16 @@ ui <- fluidPage(
             h3("Welcome to the ToxCast Data Analysis Pipeline"),
             p("This application will guide you through the steps of analyzing ToxCast data."),
             p("Use the navigation buttons below to move through each processing level."),
+            
+            h4("Pipeline Steps:"),
+            tags$ul(
+                tags$li(strong("Level 1:"), " Converts the assay component to assay endpoint(s), defines the normalized-response value (resp), and optionally, derives the baseline value (bval) and positive control value (pval)."),
+                tags$li(strong("Level 2:"), " Involves defining the corrected value (cval) based on the correction methods applied to the assay data. This step aggregates and processes the data to prepare it for further analysis, ensuring that the results are normalized and ready for interpretation."),
+                tags$li(strong("Level 3:"), " Converts the assay component to assay endpoint(s), defines the normalized-response value (resp), and optionally, derives the baseline value (bval) and positive control value (pval)."),
+                tags$li(strong("Level 4:"), " Applies advanced fitting methods to the processed Level 3 data, generating final results for analysis."),
+                tags$li(strong("Level 5:"), " Determines the winning model and activity for the concentration series, bins all of the concentration series into fitc categories, and calculates various potency estimates.")
+            ),
+            
             div(class = "nav-buttons",
                 actionButton("next-1", "Begin Analysis", class = "btn-navigate")
             )
@@ -183,9 +193,7 @@ ui <- fluidPage(
         ),
         
         div(id = "step-3-content", class = "step-content", style = "display: none;",
-            h3("Level 1 Processing Overview"),
-            actionButton("toggle_desc", "Show Description"),  # Button to toggle description
-            uiOutput("description_ui"),  # Use uiOutput to dynamically render the description
+            h3("Level 1 Processing"),
             actionButton("process_data", "Process Level 1 Data"),  # Button to initiate Level 1 processing
             DT::dataTableOutput("processedData"),  # Output for processed data
             plotOutput("processedPlot"),  # Output for visualization
@@ -196,11 +204,9 @@ ui <- fluidPage(
         ),
         
         div(id = "step-4-content", class = "step-content", style = "display: none;",
-            h3("Level 2 Processing Overview"),
+            h3("Level 2 Processing"),
             selectInput("method_select", "Select Correction Method:", 
                         choices = names(tcpl:::mc2_mthds()), selected = names(tcpl:::mc2_mthds())[1]),  # Dropdown for method selection
-            actionButton("toggle_desc_lvl2", "Show Description"),  # Button to toggle description
-            uiOutput("description_ui_lvl2"),  # Use uiOutput to dynamically render the description
             actionButton("process_data_lvl2", "Process Level 2 Data"),  # Button to initiate Level 2 processing
             DT::dataTableOutput("processedData_lvl2"),  # Output for processed Level 2 data
             plotOutput("processedPlot_lvl2"),  # Output for visualization of Level 2 data
@@ -211,11 +217,9 @@ ui <- fluidPage(
         ),
         
         div(id = "step-5-content", class = "step-content", style = "display: none;",
-            h3("Level 3 Processing Overview"),
+            h3("Level 3 Processing"),
             selectInput("method_select_lvl3", "Select Correction Method:", 
                         choices = names(tcpl:::mc3_mthds()), selected = names(tcpl:::mc3_mthds())[1]),  # Dropdown for method selection
-            actionButton("toggle_desc_lvl3", "Show Description"),  # Button to toggle description
-            uiOutput("description_ui_lvl3"),  # Use uiOutput to dynamically render the description
             actionButton("process_data_lvl3", "Process Level 3 Data"),  # Button to initiate Level 3 processing
             DT::dataTableOutput("processedData_lvl3"),  # Output for processed Level 3 data
             plotOutput("processedPlot_lvl3"),  # Output for visualization of Level 3 data
@@ -226,11 +230,9 @@ ui <- fluidPage(
         ),
         
         div(id = "step-6-content", class = "step-content", style = "display: none;",
-            h3("Level 4 Processing Overview"),
+            h3("Level 4 Processing"),
             selectInput("method_select_lvl4", "Select Correction Method:", 
                         choices = names(tcpl:::mc4_mthds()), selected = names(tcpl:::mc4_mthds())[1]),  # Dropdown for method selection
-            actionButton("toggle_desc_lvl4", "Show Description"),  # Button to toggle description
-            uiOutput("description_ui_lvl4"),  # Use uiOutput to dynamically render the description
             actionButton("process_data_lvl4", "Process Level 4 Data"),  # Button to initiate Level 4 processing
             DT::dataTableOutput("processedData_lvl4"),  # Output for processed Level 4 data
             plotOutput("processedPlot_lvl4"),  # Output for visualization of Level 4 data
@@ -241,9 +243,7 @@ ui <- fluidPage(
         ),
         
         div(id = "step-7-content", class = "step-content", style = "display: none;",
-            h3("Level 5 Processing Overview"),
-            actionButton("toggle_desc_lvl5", "Show Description"),  # Button to toggle description
-            uiOutput("description_ui_lvl5"),  # Use uiOutput to dynamically render the description
+            h3("Level 5 Processing"),
             selectInput("method_select_lvl5", "Select Correction Method:", 
                         choices = names(tcpl:::mc5_mthds()), selected = names(tcpl:::mc5_mthds())[1]),  # Dropdown for method selection
             actionButton("process_data_lvl5", "Process Level 5 Data"),  # Button to initiate Level 5 processing
@@ -377,40 +377,7 @@ server <- function(input, output, session) {
         })
     })
 
-    # Render the description based on button click for Level 1
-    output$description_ui <- renderUI({
-        if (input$toggle_desc %% 2 == 1) {  # Check if the button has been clicked an odd number of times
-            withMathJax(HTML("<p>Level 1 processing converts the assay component to assay endpoint(s), defines the normalized-response value (resp), and optionally, derives the baseline value (bval) and positive control value (pval).</p>"))
-        }
-    })
-
-    # Render the description based on button click for Level 2
-    output$description_ui_lvl2 <- renderUI({
-        if (input$toggle_desc_lvl2 %% 2 == 1) {  # Check if the button has been clicked an odd number of times
-            withMathJax(HTML("<p>Level 2 processing involves defining the corrected value (cval) based on the correction methods applied to the assay data. This step aggregates and processes the data to prepare it for further analysis, ensuring that the results are normalized and ready for interpretation.</p>"))
-        }
-    })
-
-    # Render the description based on button click for Level 3
-    output$description_ui_lvl3 <- renderUI({
-        if (input$toggle_desc_lvl3 %% 2 == 1) {  # Check if the button has been clicked an odd number of times
-            withMathJax(HTML("<p>Level 3 processing converts the assay component to assay endpoint(s), defines the normalized-response value (resp), and optionally, derives the baseline value (bval) and positive control value (pval).</p>"))
-        }
-    })
-
-    # Render the description based on button click for Level 4
-    output$description_ui_lvl4 <- renderUI({
-        if (input$toggle_desc_lvl4 %% 2 == 1) {  # Check if the button has been clicked an odd number of times
-            withMathJax(HTML("<p>Level 4 processing applies advanced fitting methods to the processed Level 3 data, generating final results for analysis.</p>"))
-        }
-    })
-
-    # Render the description based on button click for Level 5
-    output$description_ui_lvl5 <- renderUI({
-        if (input$toggle_desc_lvl5 %% 2 == 1) {  # Check if the button has been clicked an odd number of times
-            withMathJax(HTML("<p>Level 5 processing determines the winning model and activity for the concentration series, bins all of the concentration series into fitc categories, and calculates various potency estimates.</p>"))
-        }
-    })
+    # Description UI rendered in introduction step only
 
     # Process Level 1 data when the "Process Level 1 Data" button is clicked
     observeEvent(input$process_data, {
