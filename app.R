@@ -177,15 +177,10 @@ ui <- fluidPage(
         
         div(id = "step-2-content", class = "step-content", style = "display: none;",
             h3("Data Upload"),
-            sidebarLayout(
-                sidebarPanel(
-                    fileInput("file", "Upload CSV File"),  # A file input for uploading CSV files
-                    actionButton("view", "View Data")  # An action button to view the data
-                ),
-                mainPanel(
-                    DT::dataTableOutput("dataTable")  # A main panel to display the uploaded data in a DT table
-                )
-            ),
+            fileInput("file", "Upload CSV File"),  # A file input for uploading CSV files
+            actionButton("view", "Preview Data"),  # An action button to view the data
+            HTML("<div style='margin-top: 5px; margin-bottom: 15px; font-size: 12px; color: #666;'><i>Note: If no CSV file is uploaded, example data will be used.</i></div>"),
+            DT::dataTableOutput("dataTable"),  # Display the uploaded data in a DT table
             div(class = "nav-buttons",
                 actionButton("prev-2", "Previous", class = "btn-navigate"),
                 actionButton("next-2", "Next", class = "btn-navigate")
