@@ -156,7 +156,11 @@ ui <- fluidPage(
             
             # Step 8: Level 6 Processing
             div(id = "step-8", class = "step", "6",
-                div(class = "step-label", "Level 6"))
+                div(class = "step-label", "Level 6")),
+            
+            # Step 9: Summary
+            div(id = "step-9", class = "step", "S",
+                div(class = "step-label", "Summary"))
         ),
         
         # Step content containers
@@ -259,9 +263,21 @@ ui <- fluidPage(
                         choices = c("method1", "method2"), selected = "method1"),  # Placeholder dropdown for method selection
             actionButton("process_data_lvl6", "Process Level 6 Data"),  # Button to initiate Level 6 processing
             div(class = "nav-buttons",
-                actionButton("prev-8", "Previous", class = "btn-navigate")
+                actionButton("prev-8", "Previous", class = "btn-navigate"),
+                actionButton("next-8", "Next", class = "btn-navigate")
             ),
             DT::dataTableOutput("processedData_lvl6")  # Output for processed Level 6 data
+        ),
+        
+        div(id = "step-9-content", class = "step-content", style = "display: none;",
+            h3("Summary of ToxCast Analysis"),
+            p("This summary provides an overview of all processing steps and results."),
+            actionButton("generate_summary", "Generate Summary Table"),  # Button to generate summary
+            div(class = "nav-buttons",
+                actionButton("prev-9", "Previous", class = "btn-navigate")
+            ),
+            h4("Processing Summary"),
+            DT::dataTableOutput("summaryTable")  # Output for summary table
         )
     )
 )
@@ -283,13 +299,13 @@ server <- function(input, output, session) {
     # Function to update the progress bar and step indicators
     updateProgressBar <- function(step) {
         # Calculate the percentage for progress line
-        percentage <- (step - 1) / 7 * 100
+        percentage <- (step - 1) / 8 * 100
         
         # Update progress line width
         runjs(sprintf("document.getElementById('progress-line-active').style.width = '%s%%';", percentage))
         
         # Update step classes
-        for (i in 1:8) {
+        for (i in 1:9) {
             if (i < step) {
                 # Mark previous steps as completed
                 runjs(sprintf("document.getElementById('step-%s').className = 'step completed';", i))
@@ -303,7 +319,7 @@ server <- function(input, output, session) {
         }
         
         # Hide all step content
-        for (i in 1:8) {
+        for (i in 1:9) {
             shinyjs::hide(paste0("step-", i, "-content"))
         }
         
@@ -371,8 +387,24 @@ server <- function(input, output, session) {
         updateProgressBar(7)
     })
     
+    observeEvent(input$`next-8`, {
+        updateProgressBar(9)
+    })
+    
+    observeEvent(input$`prev-9`, {
+        updateProgressBar(8)
+    })
+    
+    observeEvent(input$`next-8`, {
+        updateProgressBar(9)
+    })
+    
+    observeEvent(input$`prev-9`, {
+        updateProgressBar(8)
+    })
+    
     # Allow direct clicking on step indicators
-    for (i in 1:7) {
+    for (i in 1:9) {
         local({
             step_num <- i
             observeEvent(input[[paste0("step-", step_num)]], {
